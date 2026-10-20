@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,enumitem,hyperref}
+\usepackage[T1]{fontenc}
+\title{Paper Outline: A Weighted Implicit Monte Carlo Method for Photoionization with Recombination-Photon Transport}
+\author{Working outline}
+\date{October 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+This document outlines a first methods paper focused exclusively on hydrogen. The narrative progresses from a detailed-balance-consistent weighted implicit Monte Carlo algorithm through verification and a propagating photoionization wave, culminating in a quantitative comparison of full recombination-photon transport with the on-the-spot (OTS) approximation. Numerical conclusions in this outline are proposed tests, not claims of completed paper-quality simulations.
+\end{abstract}
+\section{Introduction}
+Motivate coupled finite-speed photon transport, photoionization (PI), radiative recombination (REC), material energy exchange, and nonequilibrium timescales. Explain why local treatment of recombination photons may obscure nonlocal feedback. State the methodological contributions: weighted optical-depth treatment, positive gross PI and stimulated REC, finite-time recombination branching, continuous-energy spontaneous REC daughters, conditional event-time sampling, implicit endpoint material closure with fixed random numbers, persistent radiation, adaptive subcycling, and population control. Restrict the first paper to pure hydrogen.
+\section{Hydrogen bound-free model}
+Define $n_H=n_0+n_p$, $n_e=n_p$, threshold $\chi=13.6\,\mathrm{eV}$, and the illustrative hydrogenic cross section
+\begin{equation}
+\sigma_{\rm PI}(E)=\sigma_0(\chi/E)^3,\qquad E\ge\chi.
+\end{equation}
+Present gross PI, spontaneous REC, and stimulated REC consistently with Milne detailed balance. Define the continuous-energy spontaneous REC distribution
+\begin{equation}
+p_{\rm rec}(E\mid T)=\frac{\alpha_E(T)}{\int_\chi^\infty\alpha_{E'}(T)\,dE'},\qquad
+\alpha_E(T)\propto E^2\sigma_{\rm PI}(E)e^{-E/(k_BT)}.
+\end{equation}
+For the illustrative cross section, $p_{\rm rec}\propto e^{-E/(k_BT)}/E$. Derive spectral PI/REC balance at Planck/Saha equilibrium. Clarify treatment of subthreshold photons and EOS assumptions.
+\paragraph{Figure 1.} Aligned PI-cross-section and recombination-spectrum panels at several temperatures, with common energy axis and direct labels.
+\section{Weighted implicit Monte Carlo algorithm}
+Start with a single homogeneous segment. Describe the positive-weight radiation-driven propagator, including stimulated recombination; do not use the PI-only attenuation formula as the final three-process rule. Derive gross PI and stimulated-REC integrated weights. For each PI-created ion, split endpoint survival from recombination during the remaining timestep using the conditional time estimator, then emit and transport a daughter photon. Include recombination of pre-existing ions and arbitrary recursive recycling. Explain that event times are integrated analytically for branch weights and sampled only to locate transported daughters.
+\paragraph{Figure 2.} Weighted reaction tree, showing surviving photons, PI-created endpoint ions, stimulated REC, and spontaneously emitted daughter photons returning to the transport queue.
+\section{Implicit material coupling and computational workflow}
+Use material state $U=(n_p,e_m)$ and freeze coefficients at a trial endpoint $U^{n+1}$. The full weighted cascade defines a fixed-realization material map $\mathcal G$ and residual
+\begin{equation}
+F(U^{n+1};\mathcal R)=\mathcal G(U^{n+1};\mathcal R)-U^{n+1}=0.
+\end{equation}
+Hold all underlying random deviates fixed through nonlinear iteration, remapping temperature-dependent recombination energies with the same deviates. Explain adaptive first-order subcycling, persistence of weighted endpoint photons, endpoint roulette and its separate stochastic conservation perturbations, and optional near-LTE material-tally control variates. Do not include unvalidated rank-two effective-scattering transport in the base algorithm.
+\section{Verification}
+\subsection{Spectral detailed balance and equilibrium}
+Verify energy-resolved $R_{\rm PI}(E)=R_{\rm sp}(E)+R_{\rm stim}(E)$ and repeated-step Planck/Saha fixed-point behavior. Distinguish exact deterministic balance from finite-particle statistical drift.
+\paragraph{Figure 3.} Spectral gross-rate overlay and aligned relative-residual strip.
+\subsection{Temporal and particle convergence}
+Demonstrate first-order global temporal convergence and $N^{-1/2}$ ensemble sampling convergence with uncertainty estimates; use persisted executable results and independently generated references.
+\paragraph{Figure 4.} Paired log-log convergence panels with directly annotated reference slopes.
+\subsection{Spatial conservation and robustness}
+Use one- and two-cell transport tests for finite flight time, escape, nonlinear coupling, weighted-number accounting, and material+radiation+escaped energy conservation. Report solver tolerance separately from roulette perturbations. Put extended tables and performance details in supplementary material.
+\section{Propagating photoionization wave}
+Study a source-driven 1-D hydrogen slab at higher spatial resolution than developmental tests. Begin with a controlled source and extend to broadband injection for spectral diagnostics. Compare $n_p(x,t)$, $T(x,t)$, radiation energy, and front location across times and resolutions. Quantify uncertainty and convergence of front position and width.
+\paragraph{Figure 5.} Direct-labeled small multiples or ordered snapshots of ionization and temperature profiles on consistent axes.
+\section{Spectral evolution and recombination radiation}
+Decompose radiation into source and recombination origin. Examine spectral hardening of transmitted source photons and the near-threshold diffuse REC component, using consistent absolute normalizations where possible.
+\paragraph{Figure 6.} Three spatially aligned spectral panels: behind, within, and ahead of the front, with direct-source and REC components distinctly labeled.
+\section{Photon recycling and ancestry}
+Tag source photons as generation zero and spontaneous recombination daughters by generation. Define gross ionization yield
+\begin{equation}
+Y_{\rm PI}=\frac{N_{\rm PI,gross}}{N_{\gamma,\rm injected}},
+\end{equation}
+and quantify where first- and higher-generation photons drive PI. Distinguish computational branching from physical reaction ancestry and give uncertainty intervals.
+\paragraph{Figure 7.} Spatial small multiples of PI-rate contributions from direct, first-generation, and later-generation photons.
+\section{Full transport versus on-the-spot recombination}
+Specify a conservation-consistent OTS closure that locally recycles ionizing recombination radiation rather than simply deleting its energy or photon number. Use identical source, EOS, atomic coefficients, boundary conditions, and initial conditions in full and OTS cases. Vary the characteristic recombination-photon nonlocality
+\begin{equation}
+\Xi=\frac{\lambda_{\rm rec,\gamma}}{L_{\rm ionized}},
+\end{equation}
+with a documented choice of energy averaging and evolving length scale. Compare front location, width, ionization and temperature profiles, and escape. Use an integrated profile discrepancy as a primary metric:
+\begin{equation}
+D_{\rm OTS}=\frac{\int |x_{p,\rm full}(x)-x_{p,\rm OTS}(x)|\,dx}{\int x_{p,\rm full}(x)\,dx}.
+\end{equation}
+Test convergence to the local limit for $\Xi\ll1$ and quantify deviations when $\Xi\gtrsim1$ without presupposing their direction or magnitude.
+\paragraph{Figure 8.} Three aligned full-versus-OTS profiles across increasing $\Xi$ and a compact discrepancy-versus-$\Xi$ summary with MC uncertainty.
+\section{Discussion}
+Explain the favorable nonequilibrium/front regime, computational cost of gross near-LTE reactions in optically thick material, the optional estimator-level LTE control variate, and the limits of Version 1. Distinguish physical accuracy, sampling variance, nonlinear robustness, and computational work. Discuss multicharge extensions as future work, not part of the hydrogen demonstration.
+\section{Conclusions}
+Summarize verified implicit bound-free kinetics, explicitly transported continuous-energy REC photons, and the measured range of validity of the OTS approximation. Do not claim the OTS result until the corresponding standalone experiments pass regression, convergence, and conservation gates.
+\appendix
+\section{Proposed figure production standards}
+Use vector PDF/SVG output, restrained fixed colors (direct source: dark blue; recombination: rust; ionization: teal; temperature: muted violet), common axes for small multiples, direct labels, visible MC uncertainty, and no decorative gradients. Every plotted dataset must have a reproducible configuration, random seed, code revision, and machine-readable output. Keep schematic illustrations explicitly marked as schematics.
+\section{Suggested supplementary material}
+Conditional-time derivation and limiting cases; complete 0-D/one-cell/two-cell regressions; nested-$N$ ensemble results; roulette Pareto study; conservation tolerances; computational scaling; optional LTE control-variate tests; OTS implementation details.
+\end{document}
